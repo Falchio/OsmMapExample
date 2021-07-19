@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">http://vec01.maps.yandex.net</domain>
+        <domain includeSubdomains="true">http://vec02.maps.yandex.net</domain>
+        <domain includeSubdomains="true">http://vec03.maps.yandex.net</domain>
+        <domain includeSubdomains="true">http://vec04.maps.yandex.net</domain>
+    </domain-config>
+</network-security-config>

@@ -9,8 +9,10 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import org.mapsforge.map.layer.download.TileDownloadLayer
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.MapTileProviderBasic
+import org.osmdroid.tileprovider.modules.TileDownloader
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
@@ -59,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
         )
+
     }
 
     public override fun onResume() {
@@ -142,11 +145,11 @@ class MainActivity : AppCompatActivity() {
         val isYandexTile = true
         if (isYandexTile) {
             val aBaseUrlYandex = arrayOf(
-                "https://core-renderer-tiles.maps.yandex.net/vmap2/tiles?lang=ru_RU&x=%s&y=%s&z=%s&zmin=%s&zmax=%s&v=21.07.19-1-b210701140430"
-//                "https://vec04.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
-//                "https://vec03.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
-//                "https://vec02.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
-//                "https://vec01.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU"
+//                "https://core-renderer-tiles.maps.yandex.net/vmap2/tiles?lang=ru_RU&x=%s&y=%s&z=%s&zmin=%s&zmax=%s&v=21.07.19-1-b210701140430"
+                "http://vec04.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
+                "http://vec03.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
+                "http://vec02.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
+                "http://vec01.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU"
             )
 
             val tileSourceYandex = object : XYTileSource(
@@ -172,6 +175,7 @@ class MainActivity : AppCompatActivity() {
 
             val tileProviderYandex = MapTileProviderBasic(applicationContext)
             tileProviderYandex.tileSource = tileSourceYandex
+            val tileDownloader:TileDownloader = TileDownloader()
             tileProviderYandex.setTileRequestCompleteHandler(map!!.tileRequestCompleteHandler)
             val tilesOverlayYandex: TilesOverlay =
                 TilesOverlay(tileProviderYandex, this.baseContext)
@@ -179,7 +183,6 @@ class MainActivity : AppCompatActivity() {
 
             map!!.overlayManager.tilesOverlay = tilesOverlayYandex
             map!!.setTileSource(tileSourceYandex)
-
         } else {
             map!!.setTileSource(TileSourceFactory.CLOUDMADESTANDARDTILES)
         }
