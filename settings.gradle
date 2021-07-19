@@ -1,0 +1,2 @@
+rootProject.name = "OsmAndroidMap"
+include ':app'
