@@ -4,18 +4,21 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.osmandroidmap.R
 import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.MapTile
 import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.util.MapTileIndex
+//import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.MapView
+import org.osmdroid.views.Projection
 import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.util.*
@@ -132,9 +135,9 @@ class MainActivity : AppCompatActivity() {
 
         // макс, мин и текущий zoom
         val mapController = map!!.controller
-        map!!.setMaxZoomLevel(maxZoomLvl.toDouble())
-        map!!.setMinZoomLevel(minZoomLvl.toDouble())
-        mapController.setZoom(defZoomLvl.toDouble())
+        map!!.setMaxZoomLevel(maxZoomLvl)
+        map!!.setMinZoomLevel(minZoomLvl)
+        mapController.setZoom(defZoomLvl)
 
         // установим центр карты
         mapController.setCenter(DEFAULT_LOCATION)
@@ -151,11 +154,32 @@ class MainActivity : AppCompatActivity() {
             aBaseUrlYandexTraffic
         )
 
+        if (false) {
+            mainOverlay(yandexTrafficTile)
+        } else {
+            paOverlay(yandexTrafficTile)
+        }
+    }
+
+    private fun mainOverlay(yandexTrafficTile: XYTileSource) {
         val tileTrafficProvider = MapTileProviderBasic(this, yandexTrafficTile)
         val trafficOverlay = TilesOverlay(tileTrafficProvider, this)
         map!!.setTileSource(TileSourceFactory.MAPNIK)
+        map!!.overlays.add(0,trafficOverlay)
+    }
+
+    private fun paOverlay(yandexTrafficTile: XYTileSource) {
+        val tileTrafficProvider = MapTileProviderBasic(this, yandexTrafficTile)
+        val trafficOverlay = YandexTilesOverlay(tileTrafficProvider, this)
+
+        val tileProvider = MapTileProviderBasic(this, TileSourceFactory.MAPNIK)
+        val tileOverlay = TilesOverlay(tileProvider, this)
+
+//        map!!.overlays.add(trafficOverlay)
+        map!!.setTileSource(TileSourceFactory.MAPNIK)
         map!!.overlays.add(trafficOverlay)
     }
+
 
     private fun getYandexTrafficTile(
         name: String,
@@ -166,15 +190,21 @@ class MainActivity : AppCompatActivity() {
         baseUrl: Array<String>
     ) = object :
         XYTileSource(name, minZoomLvl, maxZoomLvl, tilePixelSize, imageFilenameEnding, baseUrl) {
-        override fun getTileURLString(pMapTileIndex: Long): String {
+        override fun getTileURLString(aTile: MapTile?): String {
             return String.format(
-                getBaseUrl(),
-                MapTileIndex.getX(pMapTileIndex),
-                MapTileIndex.getY(pMapTileIndex),
-                MapTileIndex.getZoom(pMapTileIndex),
-                System.currentTimeMillis()
+                getBaseUrl(), aTile?.x, aTile?.y, aTile?.zoomLevel, System.currentTimeMillis()
             )
         }
+        //        override fun getTileURLString(pMapTileIndex: Long): String {
+//
+//            val x = MapTileIndex.getX(pMapTileIndex)
+//            val y = MapTileIndex.getY(pMapTileIndex)
+//            val zoom = MapTileIndex.getZoom(pMapTileIndex)
+//
+//            return String.format(
+//                getBaseUrl(), x, y, zoom, System.currentTimeMillis()
+//            )
+//        }
     }
 
 }
