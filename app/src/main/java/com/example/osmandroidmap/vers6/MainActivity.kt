@@ -1,4 +1,4 @@
-package com.example.osmandroidmap
+package com.example.osmandroidmap.vers6
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -9,7 +9,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import org.mapsforge.map.layer.download.TileDownloadLayer
+import com.example.osmandroidmap.R
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.osmdroid.tileprovider.modules.TileDownloader
@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
 
-        map!!.onResume() //needed for compass, my location overlays, v6.0.0 and up
+//        map!!.onResume() //needed for compass, my location overlays, v6.0.0 and up
     }
 
     public override fun onPause() {
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
 
-        map!!.onPause() //needed for compass, my location overlays, v6.0.0 and up
+//        map!!.onPause() //needed for compass, my location overlays, v6.0.0 and up
     }
 
     override fun onRequestPermissionsResult(
@@ -128,8 +128,8 @@ class MainActivity : AppCompatActivity() {
 
         val DEFAULT_LOCATION = GeoPoint(59.962447, 30.441147)
         val maxZoomLvl = 19
-        val minZoomLvl = 18
-        val defZoomLvl = 18
+        val minZoomLvl = 6
+        val defZoomLvl = 10
 
 
         // макс, мин и текущий zoom
@@ -142,49 +142,29 @@ class MainActivity : AppCompatActivity() {
         mapController.setCenter(DEFAULT_LOCATION)
 
         // устанвливает тайлы карты
-        val isYandexTile = true
-        if (isYandexTile) {
-            val aBaseUrlYandex = arrayOf(
-//                "https://core-renderer-tiles.maps.yandex.net/vmap2/tiles?lang=ru_RU&x=%s&y=%s&z=%s&zmin=%s&zmax=%s&v=21.07.19-1-b210701140430"
-                "http://vec04.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
-                "http://vec03.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
-                "http://vec02.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU",
-                "http://vec01.maps.yandex.net/tiles?l=map&v=4.55.2&x=%s&y=%s&z=%s&lang=ru-RU"
+
+            val aBaseUrlYandexTraffic = arrayOf(
+                "https://core-jams-rdr.maps.yandex.net/1.1/tiles?trf&l=trf,trfe&lang=ru_RU&x=%s&y=%s&z=%s&scale=1&tm=%s"
             )
+            val yandexTrafficTile = getYandexTrafficTile("YaTraffic", minZoomLvl, maxZoomLvl, 256, ".png", aBaseUrlYandexTraffic)
 
-            val tileSourceYandex = object : XYTileSource(
-                "Yandex",
-                minZoomLvl, maxZoomLvl, 256, ".png", aBaseUrlYandex
-            ) {
-                override fun getTileURLString(pTileIndex: Long): String {
-                    val url = java.lang.String.format(
-                        baseUrl,
-                        MapTileIndex.getX(pTileIndex),
-                        MapTileIndex.getY(pTileIndex),
-                        MapTileIndex.getZoom(pTileIndex),
-                        19,
-                        19
-                    )
-                    Log.d("TAG", "getTileURLString: $url" )
+            val tileTrafficProvider = MapTileProviderBasic(this, yandexTrafficTile)
+            val trafficOverlay = TilesOverlay(tileTrafficProvider,this)
+            map!!.setTileSource(TileSourceFactory.MAPNIK)
+            map!!.overlays.add(trafficOverlay)
+    }
 
-                    return url
-                }
-            }
-
-
-
-            val tileProviderYandex = MapTileProviderBasic(applicationContext)
-            tileProviderYandex.tileSource = tileSourceYandex
-            val tileDownloader:TileDownloader = TileDownloader()
-            tileProviderYandex.setTileRequestCompleteHandler(map!!.tileRequestCompleteHandler)
-            val tilesOverlayYandex: TilesOverlay =
-                TilesOverlay(tileProviderYandex, this.baseContext)
-
-
-            map!!.overlayManager.tilesOverlay = tilesOverlayYandex
-            map!!.setTileSource(tileSourceYandex)
-        } else {
-            map!!.setTileSource(TileSourceFactory.CLOUDMADESTANDARDTILES)
+    private fun getYandexTrafficTile(name:String, minZoomLvl:Int, maxZoomLvl: Int, tilePixelSize:Int, imageFilenameEnding:String, baseUrl:Array<String>) = object :
+        XYTileSource(name,minZoomLvl, maxZoomLvl,tilePixelSize, imageFilenameEnding,baseUrl ) {
+        override fun getTileURLString(pMapTileIndex: Long): String {
+            return String.format(
+                getBaseUrl(),
+                MapTileIndex.getX(pMapTileIndex),
+                MapTileIndex.getY(pMapTileIndex),
+                MapTileIndex.getZoom(pMapTileIndex),
+                System.currentTimeMillis()
+            )
         }
     }
+
 }

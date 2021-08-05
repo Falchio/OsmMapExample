@@ -1,7 +1,6 @@
-package com.example.osmandroidmap
+package com.example.osmandroidmap.vers6
 
 import android.app.Application
-import android.content.Context
 
 class App:Application() {
     companion object{
