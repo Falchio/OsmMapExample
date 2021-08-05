@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -12,7 +11,6 @@ import androidx.core.content.ContextCompat
 import com.example.osmandroidmap.R
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.MapTileProviderBasic
-import org.osmdroid.tileprovider.modules.TileDownloader
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
@@ -141,21 +139,33 @@ class MainActivity : AppCompatActivity() {
         // установим центр карты
         mapController.setCenter(DEFAULT_LOCATION)
 
-        // устанвливает тайлы карты
+        val aBaseUrlYandexTraffic = arrayOf(
+            "https://core-jams-rdr.maps.yandex.net/1.1/tiles?trf&l=trf,trfe&lang=ru_RU&x=%s&y=%s&z=%s&scale=1&tm=%s"
+        )
+        val yandexTrafficTile = getYandexTrafficTile(
+            "YaTraffic",
+            minZoomLvl,
+            maxZoomLvl,
+            256,
+            ".png",
+            aBaseUrlYandexTraffic
+        )
 
-            val aBaseUrlYandexTraffic = arrayOf(
-                "https://core-jams-rdr.maps.yandex.net/1.1/tiles?trf&l=trf,trfe&lang=ru_RU&x=%s&y=%s&z=%s&scale=1&tm=%s"
-            )
-            val yandexTrafficTile = getYandexTrafficTile("YaTraffic", minZoomLvl, maxZoomLvl, 256, ".png", aBaseUrlYandexTraffic)
-
-            val tileTrafficProvider = MapTileProviderBasic(this, yandexTrafficTile)
-            val trafficOverlay = TilesOverlay(tileTrafficProvider,this)
-            map!!.setTileSource(TileSourceFactory.MAPNIK)
-            map!!.overlays.add(trafficOverlay)
+        val tileTrafficProvider = MapTileProviderBasic(this, yandexTrafficTile)
+        val trafficOverlay = TilesOverlay(tileTrafficProvider, this)
+        map!!.setTileSource(TileSourceFactory.MAPNIK)
+        map!!.overlays.add(trafficOverlay)
     }
 
-    private fun getYandexTrafficTile(name:String, minZoomLvl:Int, maxZoomLvl: Int, tilePixelSize:Int, imageFilenameEnding:String, baseUrl:Array<String>) = object :
-        XYTileSource(name,minZoomLvl, maxZoomLvl,tilePixelSize, imageFilenameEnding,baseUrl ) {
+    private fun getYandexTrafficTile(
+        name: String,
+        minZoomLvl: Int,
+        maxZoomLvl: Int,
+        tilePixelSize: Int,
+        imageFilenameEnding: String,
+        baseUrl: Array<String>
+    ) = object :
+        XYTileSource(name, minZoomLvl, maxZoomLvl, tilePixelSize, imageFilenameEnding, baseUrl) {
         override fun getTileURLString(pMapTileIndex: Long): String {
             return String.format(
                 getBaseUrl(),
